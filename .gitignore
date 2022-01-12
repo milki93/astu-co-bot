@@ -1,1 +1,3 @@
 src/.env
+src/astu_co_bot.db
+*/__pycache__/
