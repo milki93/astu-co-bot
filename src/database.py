@@ -1,12 +1,16 @@
 import sqlite3
+from threading import current_thread
 
-from decouple import config, Csv
+from decouple import Csv, config
 
 DATABASE_NAME = config("DATABASE_NAME", default="astu_co_bot.db")
-SUPERADMINS = config("SUPERADMINS", cast=Csv())
+SUPERADMINS = [
+    int(item) if item.isdigit() else item.lower()
+    for item in config("SUPERADMINS", cast=Csv())
+]
 
 # connect the database
-link = sqlite3.connect(DATABASE_NAME)
+link = sqlite3.connect(DATABASE_NAME, check_same_thread=False)
 
 cursor = link.cursor()
 
@@ -55,19 +59,23 @@ def create_tables():
 def register_user(user):
     """The function that register users."""
     user_id = user.id
-    username = user.username
+    username = user.username or ""
     first_name = user.first_name
     last_name = user.last_name
     cursor.execute(
-        "INSERT INTO user (id, username, first_name, last_name) VALUES (?, ?, ?, ?)",
-        (user_id, username, first_name, last_name),
+        "INSERT OR IGNORE INTO user (id, username, first_name, last_name) VALUES (?, ?, ?, ?)",
+        (user_id, username.lower(), first_name, last_name),
     )
     link.commit()
 
 
 def is_superadmin(user):
     """Checks if the user is superadmin."""
-    return user.id in SUPERADMINS or user.username in SUPERADMINS
+    return (
+        user.id in SUPERADMINS
+        or user.username.lower() in SUPERADMINS
+        or "@" + user.username.lower() in SUPERADMINS
+    )
 
 
 def is_admin(user):
@@ -78,5 +86,48 @@ def is_admin(user):
     return result.fetchone()[0]
 
 
+def list_admins():
+    result = cursor.execute("SELECT first_name, username FROM user WHERE is_admin=1")
+    return result.fetchall()
+
+
+def add_admin(user):
+    user = user.lstrip("@")
+    cursor.execute(
+        "UPDATE user SET is_admin=1 WHERE username=? OR id=?", (user.lower(), user)
+    )
+    link.commit()
+
+
+def remove_admin(user):
+    user = user.lstrip("@")
+    cursor.execute(
+        "UPDATE user SET is_admin=0 WHERE username=? OR id=?", (user.lower(), user)
+    )
+    link.commit()
+
+
+def add_school(school_name, school_short_name):
+    cursor.execute(
+        "INSERT OR IGNORE INTO school (name, short_name) VALUES (?, ?)",
+        (school_name, school_short_name),
+    )
+    link.commit()
+
+
+def add_department(department_name, dept_short_name, dept_no_sem, school_id):
+    cursor.execute(
+        "INSERT OR IGNORE INTO department (name, short_name, num_sem, school_id) VALUES (?, ?, ?, ?)",
+        (department_name, dept_short_name, dept_no_sem, school_id),
+    )
+    link.commit()
+
+def list_schools():
+    result = cursor.execute("SELECT id, short_name FROM school")
+    return result.fetchall()
+
+def list_departments(sch_id):
+    result = cursor.execute("SELECT short_name FROM department WHERE school_id=?", (sch_id,))
+    return result.fetchall()
 # call the function to create tables
 create_tables()
