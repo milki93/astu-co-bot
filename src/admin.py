@@ -9,23 +9,32 @@ def list_admins(update, context):
     if not db.is_superadmin(update.message.from_user):
         return
     admins = db.list_admins()
-    msg = "Admins\n"
-    for first_name, username in admins:
-        msg += f"{first_name} - @{username}\n"
-    context.bot.send_message(chat_id=update.effective_chat.id, text=msg)
+    if admins == []:
+        context.bot.send_message(chat_id=update.effective_chat.id, text="There is no admins")
+        # a, b, c = map(int, input().split())
+    else:   
+        msg = "Admins\n"
+        for first_name, username in admins:
+            msg += f"{first_name} - @{username}\n"
+        context.bot.send_message(chat_id=update.effective_chat.id, text=msg)
 
 
 def add_admin(update, context):
     if not db.is_superadmin(update.message.from_user):
         return
+    flag = False
     for user in context.args:
-        db.add_admin(user)
+        res = db.add_admin(user)
+        if res:
+            flag = True
     if not context.args:
         update.message.reply_text(
-            "When you insert this command please insert the username or id next to the command "
+            "When you insert this command please insert like /add_admin @username "
         )
-    else:
+    elif flag:
         update.message.reply_text("Admin Registered Successfully")
+    else:
+        update.message.reply_text("The users are not the user of this bot ")
 
 
 def remove_admin(update, context):
@@ -40,8 +49,21 @@ def remove_admin(update, context):
     else:
         update.message.reply_text("Admin Deleted Successfully")
 
+def remove_school(update, context):
+    if not db.is_superadmin(update.message.from_user):
+        return
 
+    for school_id in context.args:
+        db.remove_school(school_id)
+    if not context.args:
+        update.message.reply_text(
+            "When you insert this command please insert the username or id eg:/remove_admin school_id"
+        )
+    else:
+        update.message.reply_text("school Deleted Successfully")
 def add_school(update, context):
+    if not (db.is_superadmin(update.message.from_user) or db.is_admin(update.message.from_user)):
+        return
     context.bot.send_message(
         chat_id=update.effective_chat.id, text="What is the name the school?"
     )
@@ -63,6 +85,8 @@ def save_school_short_name(update, context):
 
 
 def add_department(update, context):
+    if not (db.is_superadmin(update.message.from_user) or db.is_admin(update.message.from_user)):
+        return
     keybords = []
     schools = db.list_schools()
     for school_id, school_code in schools:
@@ -93,33 +117,28 @@ def save_department_name(update, context):
 
 
 def save_department_short_name(update, context):
-    context.user_data["department_short_name"] = update.message.text
-    update.message.reply_text("How many semesters")
-    return 4
-
-
-def save_department_no_of_sem(update, context):
-    dept_no_sem = update.message.text
+    dept_short_name = update.message.text
     department_name = context.user_data["department_name"]
-    dept_short_name = context.user_data["department_short_name"]
     school_id = context.user_data["school_id"]
-    db.add_department(department_name, dept_short_name, dept_no_sem, school_id)
+    db.add_department(department_name, dept_short_name, school_id)
     update.message.reply_text("Department added successfully")
     return ConversationHandler.END
-
+    
 
 def cancel(update, context):
     return ConversationHandler.END
 
 
 def add_course(update, context):
+    if not (db.is_superadmin(update.message.from_user) or db.is_admin(update.message.from_user)):
+        return
     keybords = []
     schools = db.list_schools()
     for school_id, school_code in schools:
         keybords.append([InlineKeyboardButton(school_code, callback_data=school_id)])
     context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text="Select School?",
+        text="Choose School",
         reply_markup=InlineKeyboardMarkup(keybords),
     )
     return 1
@@ -137,7 +156,7 @@ def save_school_id_2(update, context):
     # context.bot.send_message(chat_id=update.effective_chat.id, text="What is Name of the Course")
     context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text="Select department",
+        text="Choose department",
         reply_markup=InlineKeyboardMarkup(keyboards),
     )
     return 2
@@ -165,11 +184,17 @@ def save_course_code(update, context):
     update.message.reply_text("Send the file")
     return 5
 
-
 def save_file_id(update, context):
     context.user_data["file_id"] = update.message.document.file_id
-    update.message.reply_text("which semester")
+    update.message.reply_text("choose year")
     return 6
+
+def save_year(update, context):
+    context.user_data["year"] = update.message.text
+    update.message.reply_text("choose semester")
+    return 7
+
+
 
 
 def save_sem(update, context):
@@ -178,7 +203,8 @@ def save_sem(update, context):
     course_name = context.user_data["course_name"]
     course_code = context.user_data["course_code"]
     dept_id = context.user_data["departmet_id"]
-    db.add_course(course_code, course_name, sem, file_id, dept_id)
+    year = context.user_data["year"]
+    db.add_course(course_code, course_name, sem, file_id, year, dept_id)
     update.message.reply_text("Course added successfully")
     return ConversationHandler.END
 
@@ -200,7 +226,6 @@ department_ch = ConversationHandler(
         3: [
             MessageHandler(Filters.text & ~Filters.command, save_department_short_name)
         ],
-        4: [MessageHandler(Filters.text & ~Filters.command, save_department_no_of_sem)],
     },
     fallbacks=[CommandHandler("cancel", cancel)],
 )
@@ -213,7 +238,8 @@ course_ch = ConversationHandler(
         3: [MessageHandler(Filters.text & ~Filters.command, save_course_name)],
         4: [MessageHandler(Filters.text & ~Filters.command, save_course_code)],
         5: [MessageHandler(Filters.document, save_file_id)],
-        6: [MessageHandler(Filters.text & ~Filters.command, save_sem)],
+        6: [MessageHandler(Filters.text & ~Filters.command, save_year)],
+        7: [MessageHandler(Filters.text & ~Filters.command, save_sem)],
     },
     fallbacks=[CommandHandler("cancel", cancel)],
 )
