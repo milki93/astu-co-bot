@@ -122,12 +122,26 @@ def add_department(department_name, dept_short_name, dept_no_sem, school_id):
     )
     link.commit()
 
+
 def list_schools():
     result = cursor.execute("SELECT id, short_name FROM school")
     return result.fetchall()
 
+
 def list_departments(sch_id):
-    result = cursor.execute("SELECT short_name FROM department WHERE school_id=?", (sch_id,))
+    result = cursor.execute(
+        "SELECT id,short_name FROM department WHERE school_id=?", (sch_id,)
+    )
     return result.fetchall()
+
+
+def add_course(course_code, course_name, sem, file_id, dept_id):
+    cursor.execute(
+        "INSERT OR IGNORE INTO course_outline (course_code, name, semester, file_id,department_id) VALUES (?, ?, ?, ?,?)",
+        (course_code, course_name, sem, file_id, dept_id),
+    )
+    link.commit()
+
+
 # call the function to create tables
 create_tables()
