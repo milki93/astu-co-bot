@@ -132,16 +132,23 @@ def add_department(department_name, dept_short_name, school_id):
 def remove_school(school_id):
     cursor.execute("DELETE FROM school WHERE id=?", (school_id,))
     link.commit()
+    
 def remove_department(dept_id):
     cursor.execute("DELETE FROM department WHERE id=?", (dept_id,))
     link.commit()
+
 def remove_course(dept_id):
     cursor.execute("DELETE FROM course_outline WHERE department_id=?", (dept_id,))
     link.commit()
+
 def list_schools():
     result = cursor.execute("SELECT id, short_name FROM school")
     return result.fetchall()
 
+def search_courses():
+    result = cursor.execute("SELECT name,course_code,file_id FROM course_outline")
+
+    return result.fetchall()
 
 def list_departments(sch_id):
     result = cursor.execute(

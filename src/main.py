@@ -2,8 +2,8 @@ import logging
 import queue
 
 from decouple import config
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import (CallbackQueryHandler, CommandHandler,
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultCachedDocument
+from telegram.ext import (CallbackQueryHandler, CommandHandler, InlineQueryHandler,
                           ConversationHandler, MessageHandler, Updater)
 
 import database as db
@@ -137,49 +137,73 @@ def cancel(update, context):
     return ConversationHandler.END
 
 
+def course_inline_handler(update, context):
+    query = update.inline_query.query
+    if not query:
+        return
+    data = query.lower()
+    result = [] 
+    courses = db.search_courses()
+    for name, course_code, file_id in courses:
+        if data in name.lower() or data in course_code.lower():
+            result.append(
+                InlineQueryResultCachedDocument(
+                            id=course_code,
+                            title=name,
+                            document_file_id=file_id
+                        )
+                    )
+    update.inline_query.answer(result)
+
 # Define Bot Token
 TOKEN = config("TOKEN")
 
-# Define Bot Updater
-updater = Updater(TOKEN)
 
-# Define Bot Dispatcher
-dispatcher = updater.dispatcher
-# dispatcher.add_handler(CommandHandler("start", start))
-dispatcher.add_handler(CommandHandler("list_admins", list_admins))
-dispatcher.add_handler(CommandHandler("add_admin", add_admin))
-dispatcher.add_handler(CommandHandler("remove_admin", remove_admin))
-dispatcher.add_handler(rem_sch_ch)
-dispatcher.add_handler(school_ch)
-dispatcher.add_handler(department_ch)
-dispatcher.add_handler(course_ch)
-dispatcher.add_handler(rem_dept_ch)
-# dispatcher.add_handler(rem_course)
-# dispatcher.add_handler(rem_course)
-dispatcher.add_handler(
-    ConversationHandler(
-        entry_points=[CommandHandler("start", start)],
-        states={
-            1: [CallbackQueryHandler(save_sch_id)],
-            2: [CallbackQueryHandler(save_dept_id)],
-            3: [CallbackQueryHandler(save_year)],
-            4: [CallbackQueryHandler(save_sem)],
-            5: [CallbackQueryHandler(send_file_id)],
-        },
-        fallbacks=[CommandHandler("cancel", cancel)],
+def main():
+    # Define Bot Updater
+    updater = Updater(TOKEN)
+
+    # Define Bot Dispatcher
+    dispatcher = updater.dispatcher
+    # dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(CommandHandler("list_admins", list_admins))
+    dispatcher.add_handler(CommandHandler("add_admin", add_admin))
+    dispatcher.add_handler(CommandHandler("remove_admin", remove_admin))
+    dispatcher.add_handler(rem_sch_ch)
+    dispatcher.add_handler(school_ch)
+    dispatcher.add_handler(department_ch)
+    dispatcher.add_handler(course_ch)
+    dispatcher.add_handler(rem_dept_ch)
+    dispatcher.add_handler(InlineQueryHandler(course_inline_handler))
+    # dispatcher.add_handler(rem_course)
+    # dispatcher.add_handler(rem_course)
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler("start", start)],
+            states={
+                1: [CallbackQueryHandler(save_sch_id)],
+                2: [CallbackQueryHandler(save_dept_id)],
+                3: [CallbackQueryHandler(save_year)],
+                4: [CallbackQueryHandler(save_sem)],
+                5: [CallbackQueryHandler(send_file_id)],
+            },
+            fallbacks=[CommandHandler("cancel", cancel)],
+        )
     )
-)
-# dispatcher.add_handler( ConversationHandler(
-#     entry_points=[CommandHandler("remove_course", remove_school)],
-#     states={
-#         1: [CallbackQueryHandler(save_sch_id)],
-#         2: [CallbackQueryHandler(save_dept_id)],
-#         3: [CallbackQueryHandler(save_year)],
-#         4: [CallbackQueryHandler(save_sem)],
-#         5: [CallbackQueryHandler(delete_course)],
-#     },
-#     fallbacks=[CommandHandler("cancel", cancel)],
-# ))
-if __name__ == "__main__":
+    # dispatcher.add_handler( ConversationHandler(
+    #     entry_points=[CommandHandler("remove_course", remove_school)],
+    #     states={
+    #         1: [CallbackQueryHandler(save_sch_id)],
+    #         2: [CallbackQueryHandler(save_dept_id)],
+    #         3: [CallbackQueryHandler(save_year)],
+    #         4: [CallbackQueryHandler(save_sem)],
+    #         5: [CallbackQueryHandler(delete_course)],
+    #     },
+    #     fallbacks=[CommandHandler("cancel", cancel)],
+    # ))
     updater.start_polling()
     updater.idle()
+
+
+if __name__ == "__main__":
+    main()
