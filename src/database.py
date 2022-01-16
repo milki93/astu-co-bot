@@ -37,7 +37,7 @@ def create_tables():
             name  TEXT NOT NULL,
             short_name TEXT NOT NULL UNIQUE,
             school_id INTEGER,
-            FOREIGN KEY (school_id) REFERENCES school(id)
+            FOREIGN KEY (school_id) REFERENCES school(id) ON DELETE CASCADE
         );
         """
     COURSE_OUTLINE_SQL = """CREATE TABLE IF NOT EXISTS course_outline (
@@ -47,7 +47,7 @@ def create_tables():
             file_id TEXT NOT NULL,
             year INTEGER NOT NULL,
             department_id INTEGER,
-            FOREIGN KEY (department_id) REFERENCES department(id)
+            FOREIGN KEY (department_id) REFERENCES department(id) ON DELETE CASCADE
         );"""
 
     cursor.execute(USER_SQL)
@@ -93,7 +93,9 @@ def list_admins():
 
 def add_admin(user):
     user = user.lstrip("@")
-    result = cursor.execute("SELECT * FROM user WHERE username=? OR id=?", (user.lower(), user))
+    result = cursor.execute(
+        "SELECT * FROM user WHERE username=? OR id=?", (user.lower(), user)
+    )
     if result.fetchall() == []:
         return False
     cursor.execute(
@@ -119,16 +121,23 @@ def add_school(school_name, school_short_name):
     link.commit()
 
 
-def add_department(department_name, dept_short_name ,school_id):
+def add_department(department_name, dept_short_name, school_id):
     cursor.execute(
         "INSERT OR IGNORE INTO department (name, short_name, school_id) VALUES (?,  ?, ?)",
-        (department_name, dept_short_name ,school_id),
+        (department_name, dept_short_name, school_id),
     )
     link.commit()
-# def remove_school(school_id):
-#     cursor.execute("DELETE FROM school WHERE id=?" ,(school_id))
-#     link.commit()
 
+
+def remove_school(school_id):
+    cursor.execute("DELETE FROM school WHERE id=?", (school_id,))
+    link.commit()
+def remove_department(dept_id):
+    cursor.execute("DELETE FROM department WHERE id=?", (dept_id,))
+    link.commit()
+def remove_course(dept_id):
+    cursor.execute("DELETE FROM course_outline WHERE department_id=?", (dept_id,))
+    link.commit()
 def list_schools():
     result = cursor.execute("SELECT id, short_name FROM school")
     return result.fetchall()
@@ -139,11 +148,14 @@ def list_departments(sch_id):
         "SELECT id,short_name FROM department WHERE school_id=?", (sch_id,)
     )
     return result.fetchall()
+
+
 def list_year(dept_id):
     result = cursor.execute(
         "SELECT year FROM course_outline WHERE department_id =?", (dept_id,)
     )
     return result.fetchall()
+
 
 def add_course(course_code, course_name, sem, file_id, year, dept_id):
     cursor.execute(
@@ -151,22 +163,29 @@ def add_course(course_code, course_name, sem, file_id, year, dept_id):
         (course_code, course_name, sem, file_id, year, dept_id),
     )
     link.commit()
+
+
 def list_sem(year):
     result = cursor.execute(
         "SELECT  semester FROM course_outline WHERE year=?", (year,)
     )
     return result.fetchall()
+
+
 def list_course(dept_id, year, semes):
     result = cursor.execute(
-        "SELECT course_code, name FROM course_outline WHERE department_id =? AND year=? AND semester=? ", (dept_id,year,semes)
+        "SELECT course_code, name FROM course_outline WHERE department_id =? AND year=? AND semester=? ",
+        (dept_id, year, semes),
     )
     return result.fetchall()
+
 
 def get_file_id(cid):
     result = cursor.execute(
         "SELECT file_id FROM course_outline WHERE course_code=?", (cid,)
     )
     return result.fetchone()
+
 
 # call the function to create tables
 create_tables()
