@@ -3,13 +3,15 @@ from telegram.ext import (CallbackQueryHandler, CommandHandler,
                           ConversationHandler, Filters, MessageHandler)
 
 import database as db
+
 # from main import (save_sch_id,save_dept_id,save_year,save_sem)
+
 
 def list_admins(update, context):
     if not db.is_superadmin(update.message.from_user):
         return
     admins = db.list_admins()
-    if admins == [] :
+    if admins == []:
         context.bot.send_message(
             chat_id=update.effective_chat.id, text="There is no admins"
         )
@@ -77,6 +79,8 @@ def remove_school_id(update, context):
         chat_id=update.effective_chat.id, text="School Deleted Successfully"
     )
     return ConversationHandler.END
+
+
 def remove_department(update, context):
     if not db.is_superadmin(update.message.from_user):
         return
@@ -91,6 +95,8 @@ def remove_department(update, context):
     )
 
     return 1
+
+
 def save_school_id(update, context):
     query = update.callback_query
     query.answer()
@@ -107,6 +113,7 @@ def save_school_id(update, context):
     )
     return 2
 
+
 def remove_d_id(update, context):
     query = update.callback_query
     query.answer()
@@ -117,6 +124,8 @@ def remove_d_id(update, context):
         chat_id=update.effective_chat.id, text="department Deleted Successfully"
     )
     return ConversationHandler.END
+
+
 # def remo_school(update,context):
 #     keybords = []
 #     schools = db.list_schools()
@@ -302,7 +311,6 @@ def save_school_id_2(update, context):
         keyboards.append([InlineKeyboardButton(dept_code, callback_data=deparment_id)])
     # context.bot.send_message(chat_id=update.effective_chat.id, text="What is Name of the Course")
     query.edit_message_text(
-        
         text="Choose department",
         reply_markup=InlineKeyboardMarkup(keyboards),
     )
@@ -313,9 +321,7 @@ def save_school_id_3(update, context):
     query = update.callback_query
     query.answer()
     context.user_data["departmet_id"] = int(query.data)
-    query.edit_message_text(
-        text="What is Name of the course"
-    )
+    query.edit_message_text(text="What is Name of the course")
     return 3
 
 
@@ -331,19 +337,23 @@ def save_course_code(update, context):
     update.message.reply_text("Send year")
     return 5
 
+
 def save_year(update, context):
     context.user_data["year"] = update.message.text
     update.message.reply_text("insert semester")
     return 6
 
+
 def save_sem(update, context):
-    context.user_data["semester"]=update.message.text
+    context.user_data["semester"] = update.message.text
     update.message.reply_text("send the file")
     return 7
+
+
 def save_file_id(update, context):
-    sem=context.user_data["semester"]
+    sem = context.user_data["semester"]
     file_id = update.message.document.file_id
-    context.user_data["semester"]= update.message.text
+    context.user_data["semester"] = update.message.text
     course_name = context.user_data["course_name"]
     course_code = context.user_data["course_code"]
     dept_id = context.user_data["departmet_id"]
@@ -398,7 +408,7 @@ rem_dept_ch = ConversationHandler(
     entry_points=[CommandHandler("remove_department", remove_department)],
     states={
         1: [CallbackQueryHandler(save_school_id)],
-        2: [CallbackQueryHandler( remove_d_id)]
+        2: [CallbackQueryHandler(remove_d_id)],
     },
     fallbacks=[CommandHandler("cancel", cancel)],
 )

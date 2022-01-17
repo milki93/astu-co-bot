@@ -105,6 +105,7 @@ def add_admin(user):
     return True
 
 
+
 def remove_admin(user):
     user = user.lstrip("@")
     cursor.execute(
@@ -132,14 +133,17 @@ def add_department(department_name, dept_short_name, school_id):
 def remove_school(school_id):
     cursor.execute("DELETE FROM school WHERE id=?", (school_id,))
     link.commit()
-    
+
+
 def remove_department(dept_id):
     cursor.execute("DELETE FROM department WHERE id=?", (dept_id,))
     link.commit()
 
-def remove_course(dept_id):
-    cursor.execute("DELETE FROM course_outline WHERE department_id=?", (dept_id,))
+
+def remove_course(cid):
+    cursor.execute("DELETE FROM course_outline WHERE course_code=?", (cid,))
     link.commit()
+
 
 def list_schools():
     result = cursor.execute("SELECT id, short_name FROM school")
@@ -150,16 +154,17 @@ def search_courses():
 
     return result.fetchall()
 
+
 def list_departments(sch_id):
     result = cursor.execute(
-        "SELECT id,short_name FROM department WHERE school_id=?", (sch_id,)
+        "SELECT  id,short_name FROM department WHERE school_id=?", (sch_id,)
     )
     return result.fetchall()
 
 
 def list_year(dept_id):
     result = cursor.execute(
-        "SELECT year FROM course_outline WHERE department_id =?", (dept_id,)
+        "SELECT DISTINCT year FROM course_outline WHERE department_id =?", (dept_id,)
     )
     return result.fetchall()
 
@@ -174,14 +179,14 @@ def add_course(course_code, course_name, sem, file_id, year, dept_id):
 
 def list_sem(year):
     result = cursor.execute(
-        "SELECT  semester FROM course_outline WHERE year=?", (year,)
+        "SELECT DISTINCT semester FROM course_outline WHERE year=?", (year,)
     )
     return result.fetchall()
 
 
 def list_course(dept_id, year, semes):
     result = cursor.execute(
-        "SELECT course_code, name FROM course_outline WHERE department_id =? AND year=? AND semester=? ",
+        "SELECT  course_code, name FROM course_outline WHERE department_id =? AND year=? AND semester=? ",
         (dept_id, year, semes),
     )
     return result.fetchall()

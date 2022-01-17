@@ -2,12 +2,15 @@ import logging
 import queue
 
 from decouple import config
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultCachedDocument
-from telegram.ext import (CallbackQueryHandler, CommandHandler, InlineQueryHandler,
-                          ConversationHandler, MessageHandler, Updater)
+from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
+                      InlineQueryResultCachedDocument)
+from telegram.ext import (CallbackQueryHandler, CommandHandler,
+                          ConversationHandler, InlineQueryHandler,
+                          MessageHandler, Updater)
 
 import database as db
-from admin import (add_admin, course_ch, department_ch, list_admins,rem_sch_ch, remove_admin, school_ch,rem_dept_ch)
+from admin import (add_admin, course_ch, department_ch, list_admins,
+                   rem_dept_ch, rem_sch_ch, remove_admin, school_ch)
 
 # Configure logging
 logging.basicConfig(
@@ -79,7 +82,7 @@ def save_dept_id(update, context):
     keyboards = []
     years = db.list_year(dept_id)
     for year in years:
-        keyboards.append([InlineKeyboardButton(str(year), callback_data=str(year))])
+        keyboards.append([InlineKeyboardButton(str(year[0]) + " Year", callback_data=year[0])])
     query.edit_message_text(
         text="Which year", reply_markup=InlineKeyboardMarkup(keyboards)
     )
@@ -89,13 +92,13 @@ def save_dept_id(update, context):
 def save_year(update, context):
     query = update.callback_query
     query.answer()
-    context.user_data["year"] = int(query.data)
+    context.user_data["year"] =int(query.data)
     year = context.user_data["year"]
     keyboards = []
     semsters = db.list_sem(year)
-    for semster in semsters[0]:
+    for semster in semsters:
         keyboards.append(
-            [InlineKeyboardButton(str(semster), callback_data=str(semster))]
+            [InlineKeyboardButton(str(semster[0]) + "semester", callback_data=semster[0])]
         )
     query.edit_message_text(
         text="Which semster", reply_markup=InlineKeyboardMarkup(keyboards)
@@ -106,7 +109,7 @@ def save_year(update, context):
 def save_sem(update, context):
     query = update.callback_query
     query.answer()
-    context.user_data["sem"] = int(query.data)
+    context.user_data["sem"] = query.data
     semes = context.user_data["sem"]
     year = context.user_data["year"]
     dept_id = context.user_data["department_id"]
@@ -129,7 +132,7 @@ def send_file_id(update, context):
     context.bot.send_document(
         chat_id=update.effective_chat.id, document=db.get_file_id(query.data)[0]
     )
-    query.message.reply_text("Thanks")
+    # query.message.reply_text("Thanks")
     return ConversationHandler.END
 
 
@@ -142,18 +145,51 @@ def course_inline_handler(update, context):
     if not query:
         return
     data = query.lower()
-    result = [] 
+    result = []
     courses = db.search_courses()
     for name, course_code, file_id in courses:
         if data in name.lower() or data in course_code.lower():
             result.append(
                 InlineQueryResultCachedDocument(
-                            id=course_code,
-                            title=name,
-                            document_file_id=file_id
-                        )
-                    )
+                    id=course_code, title=name, document_file_id=file_id
+                )
+            )
     update.inline_query.answer(result)
+def remove_course(update,context):
+    keybords = []
+    schools = db.list_schools()
+    for school_id, school_code in schools:
+        keybords.append([InlineKeyboardButton(school_code, callback_data=school_id)])
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="Select School?",
+        reply_markup=InlineKeyboardMarkup(keybords),
+    )
+
+    return 1
+def delete_course(update, context):
+    query = update.callback_query
+    query.answer()
+    db.remove_course(query.data)
+    context.bot.send_message(
+        chat_id=update.effective_chat.id, text="course Deleted Successfully"
+    )
+    return ConversationHandler.END
+# def update_admin(update,context):
+#     keybords = [
+#         [InlineKeyboardButton(user_name,callback_data=)]
+#     ]
+#     for school_id, school_code in schools:
+#         keybords.append([InlineKeyboardButton(school_code, callback_data=school_id)])
+#     context.bot.send_message(
+#         chat_id=update.effective_chat.id,
+#         text="Select School?",
+#         reply_markup=InlineKeyboardMarkup(keybords),
+#     )
+
+#     return 1
+
+
 
 # Define Bot Token
 TOKEN = config("TOKEN")
@@ -190,17 +226,19 @@ def main():
             fallbacks=[CommandHandler("cancel", cancel)],
         )
     )
-    # dispatcher.add_handler( ConversationHandler(
-    #     entry_points=[CommandHandler("remove_course", remove_school)],
-    #     states={
-    #         1: [CallbackQueryHandler(save_sch_id)],
-    #         2: [CallbackQueryHandler(save_dept_id)],
-    #         3: [CallbackQueryHandler(save_year)],
-    #         4: [CallbackQueryHandler(save_sem)],
-    #         5: [CallbackQueryHandler(delete_course)],
-    #     },
-    #     fallbacks=[CommandHandler("cancel", cancel)],
-    # ))
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler("remove_course", remove_course)],
+            states={
+                1: [CallbackQueryHandler(save_sch_id)],
+                2: [CallbackQueryHandler(save_dept_id)],
+                3: [CallbackQueryHandler(save_year)],
+                4: [CallbackQueryHandler(save_sem)],
+                5: [CallbackQueryHandler(delete_course)],
+            },
+            fallbacks=[CommandHandler("cancel", cancel)],
+        )
+    )  
     updater.start_polling()
     updater.idle()
 
