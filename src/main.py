@@ -82,7 +82,9 @@ def save_dept_id(update, context):
     keyboards = []
     years = db.list_year(dept_id)
     for year in years:
-        keyboards.append([InlineKeyboardButton(str(year[0]) + " Year", callback_data=year[0])])
+        keyboards.append(
+            [InlineKeyboardButton(str(year[0]) + " Year", callback_data=year[0])]
+        )
     query.edit_message_text(
         text="Which year", reply_markup=InlineKeyboardMarkup(keyboards)
     )
@@ -92,13 +94,17 @@ def save_dept_id(update, context):
 def save_year(update, context):
     query = update.callback_query
     query.answer()
-    context.user_data["year"] =int(query.data)
+    context.user_data["year"] = int(query.data)
     year = context.user_data["year"]
     keyboards = []
     semsters = db.list_sem(year)
     for semster in semsters:
         keyboards.append(
-            [InlineKeyboardButton(str(semster[0]) + "semester", callback_data=semster[0])]
+            [
+                InlineKeyboardButton(
+                    str(semster[0]) + "semester", callback_data=semster[0]
+                )
+            ]
         )
     query.edit_message_text(
         text="Which semster", reply_markup=InlineKeyboardMarkup(keyboards)
@@ -155,7 +161,9 @@ def course_inline_handler(update, context):
                 )
             )
     update.inline_query.answer(result)
-def remove_course(update,context):
+
+
+def remove_course(update, context):
     keybords = []
     schools = db.list_schools()
     for school_id, school_code in schools:
@@ -167,6 +175,8 @@ def remove_course(update,context):
     )
 
     return 1
+
+
 def delete_course(update, context):
     query = update.callback_query
     query.answer()
@@ -175,6 +185,8 @@ def delete_course(update, context):
         chat_id=update.effective_chat.id, text="course Deleted Successfully"
     )
     return ConversationHandler.END
+
+
 # def update_admin(update,context):
 #     keybords = [
 #         [InlineKeyboardButton(user_name,callback_data=)]
@@ -188,7 +200,6 @@ def delete_course(update, context):
 #     )
 
 #     return 1
-
 
 
 # Define Bot Token
@@ -238,7 +249,7 @@ def main():
             },
             fallbacks=[CommandHandler("cancel", cancel)],
         )
-    )  
+    )
     updater.start_polling()
     updater.idle()
 

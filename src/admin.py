@@ -46,6 +46,10 @@ def remove_admin(update, context):
         return
     for user in context.args:
         db.remove_admin(user)
+    if db.remove_admin == []:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id, text="There is no admins"
+        )
     if not context.args:
         update.message.reply_text(
             "When you insert this command please insert the username or id next to the command "
@@ -59,14 +63,19 @@ def remove_school(update, context):
         return
     keybords = []
     schools = db.list_schools()
-    for school_id, school_code in schools:
-        keybords.append([InlineKeyboardButton(school_code, callback_data=school_id)])
-    context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text="Select School?",
-        reply_markup=InlineKeyboardMarkup(keybords),
-    )
-    return 1
+    if schools == []:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id, text="There is no Schools"
+        )
+    else:
+        for school_id, school_code in schools:
+            keybords.append([InlineKeyboardButton(school_code, callback_data=school_id)])
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Select School?",
+            reply_markup=InlineKeyboardMarkup(keybords),
+        )
+        return 1
 
 
 def remove_school_id(update, context):
@@ -89,10 +98,10 @@ def remove_department(update, context):
     for school_id, school_code in schools:
         keybords.append([InlineKeyboardButton(school_code, callback_data=school_id)])
     context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text="Select School?",
-        reply_markup=InlineKeyboardMarkup(keybords),
-    )
+            chat_id=update.effective_chat.id,
+            text="Select School?",
+            reply_markup=InlineKeyboardMarkup(keybords),
+        )
 
     return 1
 
@@ -104,13 +113,18 @@ def save_school_id(update, context):
     sch_id = context.user_data["school_id"]
     keyboards = []
     departments = db.list_departments(sch_id)
-    for department_id, dept_code in departments:
-        keyboards.append([InlineKeyboardButton(dept_code, callback_data=department_id)])
-    # context.bot.send_message(chat_id=update.effective_chat.id, text="What is Name of the Course")
-    query.edit_message_text(
-        text="Select department",
-        reply_markup=InlineKeyboardMarkup(keyboards),
-    )
+    if departments == []:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id, text="There is no departments"
+        )
+    else:
+        for department_id, dept_code in departments:
+            keyboards.append([InlineKeyboardButton(dept_code, callback_data=department_id)])
+        # context.bot.send_message(chat_id=update.effective_chat.id, text="What is Name of the Course")
+        query.edit_message_text(
+            text="Select department",
+            reply_markup=InlineKeyboardMarkup(keyboards),
+        )
     return 2
 
 
@@ -124,87 +138,21 @@ def remove_d_id(update, context):
         chat_id=update.effective_chat.id, text="department Deleted Successfully"
     )
     return ConversationHandler.END
-
-
-# def remo_school(update,context):
-#     keybords = []
-#     schools = db.list_schools()
-#     for school_id, school_code in schools:
-#         keybords.append([InlineKeyboardButton(school_code, callback_data=school_id)])
-#     context.bot.send_message(
-#         chat_id=update.effective_chat.id,
-#         text="Select School?",
-#         reply_markup=InlineKeyboardMarkup(keybords),
-#     )
-
-#     return 1
-# def save_s_id(update, context):
-#     query = update.callback_query
-#     query.answer()
-#     context.user_data["school_id"] = int(query.data)
-#     sch_id = context.user_data["school_id"]
-#     keyboards = []
-#     departments = db.list_departments(sch_id)
-#     for deparment_id, dept_code in departments:
-#         keyboards.append([InlineKeyboardButton(dept_code, callback_data=deparment_id)])
-#     # context.bot.send_message(chat_id=update.effective_chat.id, text="What is Name of the Course")
-#     query.edit_message_text(
-#         text="Select department",
-#         reply_markup=InlineKeyboardMarkup(keyboards),
-#     )
-#     return 2
-# def save_d_id(update, context):
-#     query = update.callback_query
-#     query.answer()
-#     context.user_data["department_id"] = int(query.data)
-#     dept_id = context.user_data["department_id"]
-#     keyboards = []
-#     years = db.list_year(dept_id)
-#     for year in years:
-#         keyboards.append([InlineKeyboardButton(str(year), callback_data=str(year))])
-#     query.edit_message_text(
-#         text="Which year", reply_markup=InlineKeyboardMarkup(keyboards)
-#     )
-#     return 3
-# def save_y(update, context):
-#     query = update.callback_query
-#     query.answer()
-#     context.user_data["year"] = int(query.data)
-#     year = context.user_data["year"]
-#     keyboards = []
-#     semsters = db.list_sem(year)
-#     for semster in semsters[0]:
-#         keyboards.append(
-#             [InlineKeyboardButton(str(semster), callback_data=str(semster))]
-#         )
-#     query.edit_message_text(
-#         text="Which semster", reply_markup=InlineKeyboardMarkup(keyboards)
-#     )
-#     return 4
-# def save_s(update, context):
-#     query = update.callback_query
-#     query.answer()
-#     context.user_data["sem"] = int(query.data)
-#     semes = context.user_data["sem"]
-#     year = context.user_data["year"]
-#     dept_id = context.user_data["department_id"]
-#     keyboards = []
-#     courses = db.list_course(dept_id, year, semes)
-#     for cid, course in courses:
-#         keyboards.append([InlineKeyboardButton(course, callback_data=cid)])
-#     query.edit_message_text(
-#         text="Which course", reply_markup=InlineKeyboardMarkup(keyboards)
-#     )
-#     return 5
+ 
 def delete_course(update, context):
     query = update.callback_query
     query.answer()
     context.user_data["dept_id"] = int(query.data)
     dept_id = context.user_data["dept_id"]
-    db.remove_course(dept_id)
-    context.bot.send_message(
-        chat_id=update.effective_chat.id, text="course Deleted Successfully"
-    )
+    course=db.remove_course(dept_id)
+    if course==[]:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id, text="There is no Courses"
+        )
+    else :
+        context.bot.send_message(
+                chat_id=update.effective_chat.id, text="course Deleted Successfully"
+            )
     return ConversationHandler.END
 
 

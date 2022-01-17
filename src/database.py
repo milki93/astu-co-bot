@@ -105,7 +105,6 @@ def add_admin(user):
     return True
 
 
-
 def remove_admin(user):
     user = user.lstrip("@")
     cursor.execute(
@@ -148,6 +147,7 @@ def remove_course(cid):
 def list_schools():
     result = cursor.execute("SELECT id, short_name FROM school")
     return result.fetchall()
+
 
 def search_courses():
     result = cursor.execute("SELECT name,course_code,file_id FROM course_outline")
