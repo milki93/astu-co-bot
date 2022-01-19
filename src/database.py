@@ -32,7 +32,7 @@ def create_tables():
             short_name TEXT NOT NULL UNIQUE
         );
         """
-    DEPARTMENT_SQL = """CREATE TABLE IF NOT EXISTS department (
+    DEPARTMENT_SQL = """CREATE TABLE IF NOT EXISTS department (      
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name  TEXT NOT NULL,
             short_name TEXT NOT NULL UNIQUE,
@@ -123,20 +123,25 @@ def add_school(school_name, school_short_name):
 
 def add_department(department_name, dept_short_name, school_id):
     cursor.execute(
-        "INSERT OR IGNORE INTO department (name, short_name, school_id) VALUES (?,  ?, ?)",
+        "INSERT OR IGNORE INTO department (name, short_name, school_id) VALUES (?, ?, ?)",
         (department_name, dept_short_name, school_id),
     )
     link.commit()
 
 
 def remove_school(school_id):
+    # result = cursor.execute("SELECT * FROM department WHERE school_id=?"(school_id,))
     cursor.execute("DELETE FROM school WHERE id=?", (school_id,))
+    # res = result.fetchall()
+    # cursor.execute("DELETE FROM department WHERE school_id IN = ?", (res,))
     link.commit()
 
 
 def remove_department(dept_id):
     cursor.execute("DELETE FROM department WHERE id=?", (dept_id,))
     link.commit()
+    # cursor.execute("DELETE * FROM course_outline WHERE department_id=?", (dept_id,))
+    # link.commit()
 
 
 def remove_course(cid):

@@ -1,4 +1,5 @@
 src/.env 
 src/inline.py
 */__pycache__/
+project.html/index.html
 *.db
