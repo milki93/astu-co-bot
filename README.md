@@ -1,8 +1,19 @@
 # ASTU Course Outline Telegram Bot
 
 This is a Python script that sends a course outline for Adama Science and Technology University students based on their department and interest. 
+This bot not only for Adama Science and Technology University ,another universities can also use this bot.
 
 ## Usage
+use /start to start the bot 
+/add_admin - To add admins.
+/list_admins - To list admin.
+/remove_admin - To remove admin
+/add_school - to add school.
+/add_department - to add department.
+/add_course - to add course.
+/remove_school - to remove school
+/remove_department - to remove department
+/remove_course - to remove course
 
 ### Requiremets
 Inorder to user this source code you should install system requirements.
@@ -46,3 +57,8 @@ Save .env file and run `main.py`
 ```markdown
 python main.py
 ```
+
+
+Contact 
+- milkidida131@gmail.com
+-https://github.com/milki93/astu-co-bot.git
