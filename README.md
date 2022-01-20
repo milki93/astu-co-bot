@@ -1,9 +1,14 @@
 # Course Outline Telegram Bot <img src="https://www.freepnglogos.com/uploads/telegram-logo-png-0.png" width="20" alt="telegram logo png" />
 
-This is a Python script that runs a Telegram bot to share course outlines inside specific university.
+This is a Python script that runs a Telegram bot to share course outlines inside specific university. 
+
+
+> <img src="img/screenshoot_1.jpeg" width="200" /> <img src="img/screenshoot_2.jpeg" width="200" />
+
 
 ## Usage
 > * `/start` to start the bot 
+> * `/cancel` to cancel any operation 
 > * `/add_admin` - To add admins.
 > * `/list_admins` - To list admin.
 > * `/remove_admin` - To remove admin
