@@ -1,19 +1,18 @@
 # ASTU Course Outline Telegram Bot
 
-This is a Python script that sends a course outline for Adama Science and Technology University students based on their department and interest. 
-This bot not only for Adama Science and Technology University ,another universities can also use this bot.
+This is a Python script that runs a Telegram bot to share course outlines inside specific university.
 
 ## Usage
-use /start to start the bot 
-/add_admin - To add admins.
-/list_admins - To list admin.
-/remove_admin - To remove admin
-/add_school - to add school.
-/add_department - to add department.
-/add_course - to add course.
-/remove_school - to remove school
-/remove_department - to remove department
-/remove_course - to remove course
+> * `/start` to start the bot 
+> * `/add_admin` - To add admins.
+> * `/list_admins` - To list admin.
+> * `/remove_admin` - To remove admin
+> * `/add_school` - to add school.
+> * `/add_department` - to add department.
+> * `/add_course` - to add course.
+> * `/remove_school` - to remove school
+> * `/remove_department` - to remove department
+> * `/remove_course` - to remove course
 
 ### Requiremets
 Inorder to user this source code you should install system requirements.
@@ -59,6 +58,9 @@ python main.py
 ```
 
 
-Contact 
-- milkidida131@gmail.com
--https://github.com/milki93/astu-co-bot.git
+### Contact 
+
+> * <img src="https://www.freepnglogos.com/uploads/logo-gmail-png/logo-gmail-png-gmail-icon-download-png-and-vector-1.png" width="15" alt="logo gmail png gmail icon download png and vector" />&nbsp;&nbsp;[Gmail](mailto:milkidida131@gmail.com)
+> * <img src="https://www.freepnglogos.com/uploads/512x512-logo-png/512x512-logo-github-icon-35.png" width="15" alt="512x512 logo github icon" />&nbsp;&nbsp;[Github](https://github.com/milki93/astu-co-bot.git)
+> * <img src="https://www.freepnglogos.com/uploads/linkedin-basic-round-social-logo-png-13.png" width="15" alt="linkedin basic round social logo png" />&nbsp;&nbsp;[LinkedIn](https://www.linkedin.com/in/milki-dida)
+> * <img src="https://www.freepnglogos.com/uploads/telegram-logo-png-0.png" width="15" alt="telegram logo png" />&nbsp;&nbsp;[Telegram](https://t.me/Milkfh)
