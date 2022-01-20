@@ -1,7 +1,9 @@
 # Course Outline Telegram Bot <img src="https://www.freepnglogos.com/uploads/telegram-logo-png-0.png" width="20" alt="telegram logo png" />
 
-This is a Python script that runs a Telegram bot to share course outlines inside specific university.
-<img src="img/screen_shoot_1.jpg" width="100" /> <img src="img/screen_shoot_2.jpg" width="100" />
+This is a Python script that runs a Telegram bot to share course outlines inside specific university. 
+
+
+> <img src="img/screenshoot_1.jpeg" width="200" /> <img src="img/screenshoot_2.jpeg" width="200" />
 
 
 ## Usage
