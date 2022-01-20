@@ -1,4 +1,4 @@
-# ASTU Course Outline Telegram Bot
+# Course Outline Telegram Bot <img src="https://www.freepnglogos.com/uploads/telegram-logo-png-0.png" width="20" alt="telegram logo png" />
 
 This is a Python script that runs a Telegram bot to share course outlines inside specific university.
 
